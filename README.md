@@ -2,6 +2,24 @@
 
 음식점 메뉴를 보여주는 데스크톱 애플리케이션입니다.
 
+## 프로젝트 구조
+```
+pulldown-food-court/
+├── src/
+│   └── app.py          # 메인 애플리케이션 파일
+├── resources/
+│   ├── images/         # 메뉴 이미지 파일 (*.jpg)
+│   └── audio/          # 배경음악 파일 (background.mp3)
+└── requirements.txt    # 프로젝트 의존성
+```
+
+## 필요한 리소스 파일
+- `resources/images/`: 각 메뉴 항목의 이미지 파일 (예: 비빔밥.jpg, 김치찌개.jpg 등)
+- `resources/audio/background.mp3`: 배경음악 파일
+
+※ 이미지와 오디오 파일은 저작권 문제로 인해 저장소에 포함되어 있지 않습니다.
+직접 준비하여 해당 디렉토리에 넣어주세요.
+
 ## 설치 방법
 
 ### macOS
@@ -16,6 +34,7 @@
 2. 프로젝트 파일 준비
    - 이 저장소를 다운로드 또는 클론
    - `resources/images` 폴더에 메뉴 이미지 파일들이 있는지 확인
+   - `resources/audio` 폴더에 background.mp3 파일이 있는지 확인
 
 3. 가상환경 생성 및 패키지 설치
    ```bash
@@ -40,6 +59,7 @@
 2. 프로젝트 파일 준비
    - 이 저장소를 다운로드 또는 클론
    - `resources/images` 폴더에 메뉴 이미지 파일들이 있는지 확인
+   - `resources/audio` 폴더에 background.mp3 파일이 있는지 확인
    
 3. 가상환경 생성 및 패키지 설치
    ```bash

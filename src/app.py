@@ -1,17 +1,56 @@
 import sys
 import os
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QLabel, QVBoxLayout
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QPixmap
+import pygame
 
 app_title = "풀다운 푸드 코트"
 RESOURCES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources")
 IMAGE_DIR = os.path.join(RESOURCES_DIR, "images")
+AUDIO_DIR = os.path.join(RESOURCES_DIR, "audio")
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.bgm_length = 0
+        self.init_audio()
         self.init_ui()
+    
+    def init_audio(self):
+        """배경음 초기화"""
+        pygame.mixer.init()
+        bgm_path = os.path.join(AUDIO_DIR, "background.mp3")
+        if os.path.exists(bgm_path):
+            # 음악의 총 길이(초) 구하기
+            sound = pygame.mixer.Sound(bgm_path)
+            self.bgm_length = sound.get_length()
+            
+            # 시작 1초부터 재생
+            pygame.mixer.music.load(bgm_path)
+            pygame.mixer.music.play(-1, start=1.0)
+            
+            # 타이머를 사용하여 끝나기 1초 전에 다시 시작
+            self.bgm_timer = QTimer(self)
+            # 음악이 끝나기 1.1초 전에 타이머 실행 (약간의 여유를 둠)
+            interval = (self.bgm_length - 2.1) * 1000  # 밀리초 단위로 변환
+            self.bgm_timer.setInterval(int(interval))
+            self.bgm_timer.timeout.connect(self.restart_bgm)
+            self.bgm_timer.start()
+        else:
+            print(f"배경음 파일을 찾을 수 없습니다: {bgm_path}")
+    
+    def restart_bgm(self):
+        """배경음을 1초 지점부터 다시 시작"""
+        pygame.mixer.music.play(-1, start=1.0)
+    
+    def closeEvent(self, event):
+        """윈도우가 닫힐 때 호출되는 메서드"""
+        if hasattr(self, 'bgm_timer'):
+            self.bgm_timer.stop()
+        pygame.mixer.music.stop()
+        pygame.mixer.quit()
+        event.accept()
     
     def init_ui(self):
         """UI 초기화"""

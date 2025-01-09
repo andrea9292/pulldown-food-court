@@ -10,6 +10,13 @@ resources/images/
 *.png
 *.gif
 
+# 오디오 파일 제외
+resources/audio/
+*.mp3
+*.wav
+*.ogg
+*.m4a
+
 # macOS 시스템 파일
 .DS_Store
 .AppleDouble
