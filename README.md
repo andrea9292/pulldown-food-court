@@ -9,10 +9,11 @@ pulldown-food-court/
 │   ├── app.py          # 메인 애플리케이션 진입점
 │   ├── ui/             # UI 관련 코드
 │   │   ├── __init__.py
-│   │   └── main_window.py
+│   │   ├── main_window.py  # 메인 윈도우 UI 구현
+│   │   └── menu_manager.py # 메뉴 시스템 관리
 │   └── audio/          # 오디오 관련 코드
 │       ├── __init__.py
-│       └── audio_manager.py
+│       └── audio_manager.py # 배경음악 재생 관리
 ├── resources/
 │   ├── images/         # 메뉴 이미지 파일 (*.jpg)
 │   └── audio/          # 배경음악 파일 (background.mp3)
@@ -23,6 +24,8 @@ pulldown-food-court/
 - 메뉴바를 통한 음식 카테고리 및 메뉴 선택
 - 선택한 메뉴의 이미지 표시
 - 배경음악 재생 (페이드 인/아웃 구간 제외)
+- 프로그램 정보 보기
+- 종료 확인 대화상자
 
 ## 필요한 리소스 파일
 - `resources/images/`: 각 메뉴 항목의 이미지 파일 (예: 비빔밥.jpg, 김치찌개.jpg 등)
@@ -108,5 +111,12 @@ pyinstaller --onefile --windowed --name "풀다운 푸드 코트" src/app.py
 
 ### 프로젝트 구조 설명
 - `src/app.py`: 애플리케이션의 진입점. UI와 오디오 컴포넌트를 초기화하고 연결
-- `src/ui/main_window.py`: 메인 윈도우 UI 구현. 메뉴바, 이미지 표시 등을 담당
-- `src/audio/audio_manager.py`: 배경음악 재생 관리. 음악 재생/정지, 타이머 관리 등을 담당
+- `src/ui/main_window.py`: 메인 윈도우 UI 구현. 이미지 표시와 레이아웃 관리
+- `src/ui/menu_manager.py`: 메뉴 시스템 관리. 메뉴 구조 정의 및 이벤트 처리
+- `src/audio/audio_manager.py`: 배경음악 재생 관리. 음악 재생/정지 및 타이머 관리
+
+### 모듈화된 구조의 장점
+1. **관심사의 분리**: 각 모듈이 특정 기능에 집중
+2. **코드 재사용성**: 각 컴포넌트를 독립적으로 재사용 가능
+3. **유지보수성**: 기능별로 분리되어 있어 수정이 용이
+4. **테스트 용이성**: 각 컴포넌트를 독립적으로 테스트 가능
