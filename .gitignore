@@ -9,3 +9,8 @@ resources/images/
 *.jpeg
 *.png
 *.gif
+
+# macOS 시스템 파일
+.DS_Store
+.AppleDouble
+.LSOverride
