@@ -2,3 +2,10 @@ venv/
 __pycache__/
 *.pyc
 *.pyo
+
+# 이미지 파일 제외
+resources/images/
+*.jpg
+*.jpeg
+*.png
+*.gif
