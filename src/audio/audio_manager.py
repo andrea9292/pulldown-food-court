@@ -20,13 +20,14 @@ class AudioManager:
         # 효과음 전용 채널
         self.effect_channel = pygame.mixer.Channel(0)
 
-    def play_ambient_sound(self, parent=None):
+    def play_ambient_sound(self, filename, parent=None):
         """배경 환경음 재생
         
         Args:
+            filename (str): 재생할 환경음 파일명 (예: ambient.mp3)
             parent: QTimer를 위한 부모 객체 (보통 MainWindow)
         """
-        ambient_path = os.path.join(self.audio_dir, "ambient.mp3")
+        ambient_path = os.path.join(self.audio_dir, filename)
         if not os.path.exists(ambient_path):
             print(f"배경 환경음 파일을 찾을 수 없습니다: {ambient_path}")
             return
@@ -66,9 +67,9 @@ class AudioManager:
         # 이전에 재생 중이던 효과음 중지
         self.effect_channel.stop()
         
-        # 효과음 채널에서 새로운 효과음 재생
+        # 효과음 채널에서 새로운 효과음 재생 (-1은 무한 반복)
         sound = pygame.mixer.Sound(sound_path)
-        self.effect_channel.play(sound)
+        self.effect_channel.play(sound, loops=-1)
 
     def cleanup(self):
         """오디오 리소스 정리"""

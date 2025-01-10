@@ -23,7 +23,7 @@ class MainWindow(QMainWindow):
         self.init_ui()
         
         # 배경 환경음 시작
-        self.audio_manager.play_ambient_sound(self)
+        self.audio_manager.play_ambient_sound("ambient.mp3", self)
 
     def init_ui(self):
         """UI 초기화"""
@@ -46,11 +46,13 @@ class MainWindow(QMainWindow):
         # 이미지를 표시할 라벨
         self.image_label = QLabel()
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image_label.setMinimumSize(700, 500)  # 최소 크기 설정        
         layout.addWidget(self.image_label)
         
         # 선택된 메뉴를 표시할 라벨
         self.selected_label = QLabel("메뉴를 선택해주세요")
         self.selected_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.selected_label.setStyleSheet("QLabel { padding: 10px; }")  # 패딩 추가
         layout.addWidget(self.selected_label)
         
         # 기본 이미지 설정
@@ -68,13 +70,14 @@ class MainWindow(QMainWindow):
     def set_default_image(self):
         """기본 이미지 설정"""
         self.image_label.setText("이미지가 없습니다")
+        self.image_label.setStyleSheet("QLabel { font-size: 14px; }")
 
     def load_menu_image(self, menu_item):
         """메뉴에 해당하는 이미지 로드"""
         image_path = os.path.join(self.image_dir, f"{menu_item}.jpg")
         if os.path.exists(image_path):
             pixmap = QPixmap(image_path)
-            # 이미지 크기를 더 크게 조정 (700x500)
+            # 이미지 크기를 조정 (700x500)
             scaled_pixmap = pixmap.scaled(700, 500, Qt.AspectRatioMode.KeepAspectRatio, 
                                         Qt.TransformationMode.SmoothTransformation)
             self.image_label.setPixmap(scaled_pixmap)

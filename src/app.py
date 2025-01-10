@@ -14,7 +14,6 @@ def main():
     
     # 오디오 매니저 초기화
     audio_manager = AudioManager(AUDIO_DIR)
-    audio_manager.play_background("ambient.mp3")
     
     # 메인 윈도우 생성
     window = MainWindow(app_title, IMAGE_DIR, audio_manager)

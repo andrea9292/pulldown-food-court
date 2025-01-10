@@ -21,3 +21,11 @@ resources/audio/
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# VS Code 핸들러 파일
+.vscode
+
+# PyCharm 핸들러 및 설정 파일
+.idea
+*.iml
+
