@@ -1,9 +1,36 @@
 import os
 from PySide6.QtWidgets import (QMainWindow, QWidget, QLabel, QVBoxLayout, 
                              QMessageBox)
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QPixmap
 from .menu_manager import MenuManager
+
+class ImageLoader(QThread):
+    """이미지 로딩을 위한 워커 스레드"""
+    image_loaded = Signal(object)  # 이미지 로딩이 완료되면 QPixmap을 전달
+    load_error = Signal(str)    # 에러 발생 시 에러 메시지 전달
+    
+    def __init__(self, image_path):
+        super().__init__()
+        self.image_path = image_path
+        
+    def run(self):
+        """이미지 로딩 작업 실행"""
+        try:
+            if not os.path.exists(self.image_path):
+                raise FileNotFoundError(f"이미지를 찾을 수 없습니다: {os.path.basename(self.image_path)}")
+                
+            pixmap = QPixmap(self.image_path)
+            if pixmap.isNull():
+                raise ValueError("이미지를 로드할 수 없습니다")
+                
+            # 이미지 크기를 조정 (700x500)
+            scaled_pixmap = pixmap.scaled(700, 500, 
+                                        Qt.AspectRatioMode.KeepAspectRatio,
+                                        Qt.TransformationMode.SmoothTransformation)
+            self.image_loaded.emit(scaled_pixmap)
+        except Exception as e:
+            self.load_error.emit(str(e))
 
 class MainWindow(QMainWindow):
     def __init__(self, app_title, image_dir, audio_manager):
@@ -20,7 +47,7 @@ class MainWindow(QMainWindow):
         self.audio_manager = audio_manager
         self.previous_category = None  # 이전에 선택된 카테고리 저장
         self.current_category = None  # 항목을 선택한 카테고리 저장
-
+        self.image_loader = None  # 이미지 로더 
         
         # UI 초기화
         self.init_ui()
@@ -49,7 +76,9 @@ class MainWindow(QMainWindow):
         # 이미지를 표시할 라벨
         self.image_label = QLabel()
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image_label.setMinimumSize(700, 500)  # 최소 크기 설정        
+        self.image_label.setMinimumSize(700, 500)  # 최소 크기 설정
+        self.image_label.setText("메뉴를 선택해주세요")  # 초기 텍스트
+        self.image_label.setStyleSheet("QLabel { font-size: 14px; }")
         layout.addWidget(self.image_label)
         
         # 선택된 메뉴를 표시할 라벨
@@ -76,21 +105,36 @@ class MainWindow(QMainWindow):
         self.image_label.setStyleSheet("QLabel { font-size: 14px; }")
 
     def load_menu_image(self, menu_item):
-        """메뉴에 해당하는 이미지 로드"""
+        """메뉴에 해당하는 이미지 비동기 로드"""
+        # 이전 로더가 있다면 중지
+        if self.image_loader and self.image_loader.isRunning():
+            self.image_loader.terminate()
+            self.image_loader.wait()
+        
+        # 로딩 중임을 표시
+        self.image_label.setText("이미지 로딩 중...")
+        self.image_label.setStyleSheet("QLabel { font-size: 14px; }")
+        
+        # 새로운 이미지 로더 생성 및 시작
         image_path = os.path.join(self.image_dir, f"{menu_item}.jpg")
-        if os.path.exists(image_path):
-            pixmap = QPixmap(image_path)
-            # 이미지 크기를 조정 (700x500)
-            scaled_pixmap = pixmap.scaled(700, 500, Qt.AspectRatioMode.KeepAspectRatio, 
-                                        Qt.TransformationMode.SmoothTransformation)
-            self.image_label.setPixmap(scaled_pixmap)
-        else:
-            self.image_label.setText(f"'{menu_item}' 이미지를 찾을 수 없습니다")
+        self.image_loader = ImageLoader(image_path)
+        self.image_loader.image_loaded.connect(self.on_image_loaded)
+        self.image_loader.load_error.connect(self.on_image_error)
+        self.image_loader.start()
+
+    def on_image_loaded(self, pixmap):
+        """이미지 로딩이 완료되면 호출"""
+        self.image_label.setPixmap(pixmap)
+        self.image_label.setStyleSheet("")  # 기본 스타일로 복원
+    
+    def on_image_error(self, error_message):
+        """이미지 로딩 실패 시 호출"""
+        self.image_label.setText(error_message)
+        self.image_label.setStyleSheet("QLabel { font-size: 14px; color: red; }")
 
     def menu_clicked(self, menu_item):
         """메뉴 아이템이 선택되었을 때 호출되는 메서드"""
         self.selected_label.setText(f"선택된 메뉴: {menu_item}")
-        self.load_menu_image(menu_item)
         
         # 시스템 알림음 재생
         self.audio_manager.play_system_notification()
@@ -98,7 +142,10 @@ class MainWindow(QMainWindow):
         # MenuManager를 통해 메뉴 카테고리 확인
         self.current_category = self.menu_manager.get_category_for_item(menu_item)
         
-        # 카테고리가 있고, 이전 카테고리와 다를 때만 음성 재생
+        # 카테고리가 있고, 이전 카테고리와 다른 경우만 음성 재생
         if self.current_category and self.current_category != self.previous_category:
             self.audio_manager.play_category_sound(self.current_category)
             self.previous_category = self.current_category
+        
+        # 이미지 로딩 시작 (비동기)
+        self.load_menu_image(menu_item)
