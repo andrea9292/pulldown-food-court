@@ -22,8 +22,8 @@ class MainWindow(QMainWindow):
         # UI 초기화
         self.init_ui()
         
-        # 배경음악 시작
-        self.audio_manager.play_background_music(self)
+        # 배경 환경음 시작
+        self.audio_manager.play_ambient_sound(self)
 
     def init_ui(self):
         """UI 초기화"""
@@ -85,3 +85,8 @@ class MainWindow(QMainWindow):
         """메뉴 아이템이 선택되었을 때 호출되는 메서드"""
         self.selected_label.setText(f"선택된 메뉴: {menu_item}")
         self.load_menu_image(menu_item)
+        
+        # MenuManager를 통해 메뉴 카테고리 확인 후 음성 재생
+        category = self.menu_manager.get_category_for_item(menu_item)
+        if category:
+            self.audio_manager.play_category_sound(category)

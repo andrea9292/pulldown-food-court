@@ -50,13 +50,27 @@ class MenuManager:
                 action.triggered.connect(
                     lambda checked, x=item: menu_click_handler(x)
                 )
-    
+
+    def get_category_for_item(self, menu_item: str) -> str:
+        """메뉴 항목에 해당하는 카테고리를 반환
+        
+        Args:
+            menu_item: 카테고리를 찾을 메뉴 항목
+            
+        Returns:
+            str: 메뉴 항목의 카테고리. 찾지 못한 경우 None
+        """
+        for category, items in self.categories.items():
+            if menu_item in items:
+                return category
+        return None
+
     def show_about_dialog(self):
         """푸드코트 정보 대화상자 표시"""
         about_text = (
             "풀다운 푸드 코트 v1.0\n\n"
-            "제작: 코드이움 팀\n"
-            "저작권: © 2025 Codeium\n\n"
+            "제작: Andrea Kim 팀\n"
+            "저작권: 2025 Andrea Kim\n\n"
             "음식점 메뉴를 쉽게 둘러볼 수 있는\n"
             "데스크톱 애플리케이션입니다."
         )
