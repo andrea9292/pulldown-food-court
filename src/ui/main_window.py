@@ -18,6 +18,9 @@ class MainWindow(QMainWindow):
         self.app_title = app_title
         self.image_dir = image_dir
         self.audio_manager = audio_manager
+        self.previous_category = None  # 이전에 선택된 카테고리 저장
+        self.current_category = None  # 항목을 선택한 카테고리 저장
+
         
         # UI 초기화
         self.init_ui()
@@ -89,7 +92,13 @@ class MainWindow(QMainWindow):
         self.selected_label.setText(f"선택된 메뉴: {menu_item}")
         self.load_menu_image(menu_item)
         
-        # MenuManager를 통해 메뉴 카테고리 확인 후 음성 재생
-        category = self.menu_manager.get_category_for_item(menu_item)
-        if category:
-            self.audio_manager.play_category_sound(category)
+        # 시스템 알림음 재생
+        self.audio_manager.play_system_notification()
+        
+        # MenuManager를 통해 메뉴 카테고리 확인
+        self.current_category = self.menu_manager.get_category_for_item(menu_item)
+        
+        # 카테고리가 있고, 이전 카테고리와 다를 때만 음성 재생
+        if self.current_category and self.current_category != self.previous_category:
+            self.audio_manager.play_category_sound(self.current_category)
+            self.previous_category = self.current_category

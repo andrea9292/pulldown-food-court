@@ -1,6 +1,14 @@
 import os
 import pygame
 from PySide6.QtCore import QTimer
+import platform
+
+# 운영체제별 필요한 모듈 import
+system = platform.system()
+if system == "Darwin":  # macOS
+    import subprocess
+elif system == "Windows":  # Windows
+    import winsound
 
 class AudioManager:
     def __init__(self, audio_dir):
@@ -70,6 +78,21 @@ class AudioManager:
         # 효과음 채널에서 새로운 효과음 재생 (-1은 무한 반복)
         sound = pygame.mixer.Sound(sound_path)
         self.effect_channel.play(sound, loops=-1)
+
+    def play_system_notification(self):
+        """시스템 알림음(Notification) 재생
+        Windows와 macOS 모두 지원"""
+        system = platform.system()
+        if system == "Darwin":  # macOS
+            try:
+                subprocess.run(["afplay", "/System/Library/Sounds/Tink.aiff"])
+            except (FileNotFoundError, subprocess.SubprocessError):
+                print("macOS에서 알림음을 재생할 수 없습니다.")
+        elif system == "Windows":  # Windows
+            try:
+                winsound.PlaySound("SystemDefault", winsound.SND_ALIAS)
+            except Exception:
+                print("Windows에서 알림음을 재생할 수 없습니다.")
 
     def cleanup(self):
         """오디오 리소스 정리"""
