@@ -93,23 +93,39 @@ pulldown-food-court/
    python src/app.py
    ```
 
-## 실행 파일 생성 (선택사항)
+## 실행 파일 생성 및 배포
 
 ### Windows
 Windows에서 실행 파일(.exe)을 생성하려면:
 ```bash
 # 가상환경이 활성화된 상태에서
-pyinstaller --onefile --windowed src/app.py
+pyinstaller --onefile src/app.py --name "풀다운 푸드 코트"
 ```
 
 ### macOS
-macOS에서 앱 번들(.app)을 생성하려면:
+macOS에서 실행 파일을 생성하려면:
 ```bash
 # 가상환경이 활성화된 상태에서
-pyinstaller --onefile --windowed --name "풀다운 푸드 코트" src/app.py
+pyinstaller --onefile src/app.py --name "풀다운 푸드 코트"
 ```
 
-생성된 실행 파일은 `dist` 폴더에서 찾을 수 있습니다.
+### 배포 방법
+1. `dist` 폴더에서 생성된 실행 파일을 찾습니다.
+2. 다음과 같은 구조로 배포 폴더를 만듭니다:
+   ```
+   배포_폴더/
+   ├── 풀다운 푸드 코트 (실행 파일)
+   └── resources/
+       ├── images/
+       │   └── (이미지 파일들)
+       └── audio/
+           └── (오디오 파일들)
+   ```
+3. 실행 파일과 resources 폴더를 함께 배포합니다.
+
+※ 주의사항:
+- 실행 파일과 resources 폴더는 반드시 같은 위치에 있어야 합니다.
+- resources 폴더가 없거나 필요한 파일이 없는 경우 프로그램이 실행되지 않습니다.
 
 ## 개발자 정보
 
@@ -124,3 +140,7 @@ pyinstaller --onefile --windowed --name "풀다운 푸드 코트" src/app.py
 2. **코드 재사용성**: 각 컴포넌트를 독립적으로 재사용 가능
 3. **유지보수성**: 기능별로 분리되어 있어 수정이 용이
 4. **테스트 용이성**: 각 컴포넌트를 독립적으로 테스트 가능
+
+## 라이선스
+이 프로젝트는 MIT License를 따릅니다.
+- **MIT License**: [MIT](https://opensource.org/licenses/MIT)
