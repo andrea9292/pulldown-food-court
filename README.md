@@ -99,8 +99,9 @@ pulldown-food-court/
 Windows에서 실행 파일(.exe)을 생성하려면:
 ```bash
 # 가상환경이 활성화된 상태에서
-pyinstaller --onefile src/app.py --name "풀다운 푸드 코트"
+pyinstaller --noconsole --onefile src/app.py --name "풀다운 푸드 코트"
 ```
+※ `--noconsole` 옵션은 실행 시 콘솔 창을 표시하지 않게 합니다.
 
 ### macOS
 macOS에서 실행 파일을 생성하려면:
