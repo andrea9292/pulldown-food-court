@@ -29,3 +29,10 @@ resources/audio/
 .idea
 *.iml
 
+# 실행파일 및 배포 환경 파일 제외
+build/
+dist/
+*.exe 
+*.app
+*.dmg
+

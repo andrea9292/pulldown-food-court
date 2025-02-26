@@ -48,20 +48,18 @@ class MainWindow(QMainWindow):
         self.previous_category = None  # 이전에 선택된 카테고리 저장
         self.current_category = None  # 항목을 선택한 카테고리 저장
         self.image_loader = None  # 이미지 로더 
+        self.image_cache = {}  # 이미지 캐시 추가
         
         # UI 초기화
         self.init_ui()
         
-        # 배경 환경음 시작
+        # 배경 환경음 시작 - 비동기로 시작하여 UI 초기화 지연 방지
+        QThread.currentThread().msleep(100)  # UI가 먼저 표시되도록 약간 지연
         self.audio_manager.play_ambient_sound("ambient.mp3", self)
 
     def init_ui(self):
         """UI 초기화"""
         self.setWindowTitle(self.app_title)
-        
-        # 메뉴 관리자 생성 및 메뉴 초기화
-        self.menu_manager = MenuManager(self)
-        self.menu_manager.create_menus(self.menu_clicked)
         
         # 중앙 위젯 설정
         central_widget = QWidget()
@@ -93,6 +91,10 @@ class MainWindow(QMainWindow):
         # 윈도우 크기 설정
         self.setMinimumSize(800, 600)
         self.setGeometry(100, 100, 800, 600)
+        
+        # 메뉴 관리자 생성 및 메뉴 초기화 - UI 초기화 후 메뉴 생성
+        self.menu_manager = MenuManager(self)
+        self.menu_manager.create_menus(self.menu_clicked)
 
     def closeEvent(self, event):
         """윈도우가 닫힐 때 호출되는 메서드"""
@@ -106,6 +108,11 @@ class MainWindow(QMainWindow):
 
     def load_menu_image(self, menu_item):
         """메뉴에 해당하는 이미지 비동기 로드"""
+        # 캐시에 이미지가 있는지 확인
+        if menu_item in self.image_cache:
+            self.on_image_loaded(self.image_cache[menu_item])
+            return
+            
         # 이전 로더가 있다면 중지
         if self.image_loader and self.image_loader.isRunning():
             self.image_loader.terminate()
@@ -118,9 +125,14 @@ class MainWindow(QMainWindow):
         # 새로운 이미지 로더 생성 및 시작
         image_path = os.path.join(self.image_dir, f"{menu_item}.jpg")
         self.image_loader = ImageLoader(image_path)
-        self.image_loader.image_loaded.connect(self.on_image_loaded)
+        self.image_loader.image_loaded.connect(lambda pixmap: self.cache_and_display_image(menu_item, pixmap))
         self.image_loader.load_error.connect(self.on_image_error)
         self.image_loader.start()
+
+    def cache_and_display_image(self, menu_item, pixmap):
+        """이미지를 캐시에 저장하고 표시"""
+        self.image_cache[menu_item] = pixmap
+        self.on_image_loaded(pixmap)
 
     def on_image_loaded(self, pixmap):
         """이미지 로딩이 완료되면 호출"""
@@ -149,3 +161,8 @@ class MainWindow(QMainWindow):
         
         # 이미지 로딩 시작 (비동기)
         self.load_menu_image(menu_item)
+
+    def toggle_ambient_sound(self):
+        """환경음 On/Off 토글"""
+        is_enabled = self.audio_manager.toggle_ambient_sound()
+        # self.ambient_action.setChecked(is_enabled)  # Removed this line

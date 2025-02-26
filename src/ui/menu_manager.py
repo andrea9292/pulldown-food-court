@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QMenuBar, QMenu, QMessageBox
 from typing import Dict, List, Callable
+from functools import partial
 
 class MenuManager:
     def __init__(self, parent_window):
@@ -10,6 +11,7 @@ class MenuManager:
         """
         self.parent = parent_window
         self.menubar = parent_window.menuBar()
+        self.category_map = {}  # 메뉴 항목에서 카테고리로의 매핑 캐시
         
         # 메뉴 카테고리와 항목들
         self.categories = {
@@ -18,8 +20,18 @@ class MenuManager:
             "분식": ["떡볶이", "순대", "튀김", "라면"],
             "일식": ["초밥", "라멘", "돈까스", "우동"],
             "양식": ["파스타", "스테이크", "피자", "샐러드"],
+            "설정": ["환경음"],
             "푸드코트": ["푸드코트 정보...", "나가기"]
         }
+        
+        # 카테고리 맵 초기화
+        self._init_category_map()
+    
+    def _init_category_map(self):
+        """메뉴 항목에서 카테고리로의 매핑 생성"""
+        for category, items in self.categories.items():
+            for item in items:
+                self.category_map[item] = category
     
     def create_menus(self, menu_click_handler: Callable[[str], None]):
         """메뉴바에 모든 메뉴 항목을 생성
@@ -41,15 +53,26 @@ class MenuManager:
             menu_click_handler: 일반 메뉴 항목 클릭 시 호출될 핸들러 함수
         """
         for item in items:
-            action = menu.addAction(item)
-            if item == "푸드코트 정보...":
-                action.triggered.connect(self.show_about_dialog)
-            elif item == "나가기":
-                action.triggered.connect(self.close_application)
+            if item == "환경음":
+                action = menu.addAction(item)
+                action.setCheckable(True)
+                action.setChecked(self.parent.audio_manager.is_ambient_enabled())
+                action.triggered.connect(self.toggle_ambient_sound)
             else:
-                action.triggered.connect(
-                    lambda checked, x=item: menu_click_handler(x)
-                )
+                action = menu.addAction(item)
+                if item == "푸드코트 정보...":
+                    action.triggered.connect(self.show_about_dialog)
+                elif item == "나가기":
+                    action.triggered.connect(self.close_application)
+                else:
+                    # 람다 함수 대신 부분 함수 사용 (성능 개선)
+                    action.triggered.connect(
+                        partial(self._handle_menu_click, item, menu_click_handler)
+                    )
+    
+    def _handle_menu_click(self, item, handler, checked=False):
+        """메뉴 클릭 핸들러 (람다 대신 사용)"""
+        handler(item)
 
     def get_category_for_item(self, menu_item: str) -> str:
         """메뉴 항목에 해당하는 카테고리를 반환
@@ -60,11 +83,9 @@ class MenuManager:
         Returns:
             str: 메뉴 항목의 카테고리. 찾지 못한 경우 None
         """
-        for category, items in self.categories.items():
-            if menu_item in items:
-                return category
-        return None
-
+        # 캐시된 매핑 사용
+        return self.category_map.get(menu_item, None)
+    
     def show_about_dialog(self):
         """푸드코트 정보 대화상자 표시"""
         about_text = (
@@ -87,3 +108,12 @@ class MenuManager:
         
         if reply == QMessageBox.StandardButton.Yes:
             self.parent.close()
+
+    def toggle_ambient_sound(self):
+        """환경음 On/Off 토글"""
+        is_enabled = self.parent.audio_manager.toggle_ambient_sound()
+        # 메뉴바에서 환경음 액션 찾기
+        settings_menu = self.menubar.findChild(QMenu, "설정")
+        if settings_menu:
+            ambient_action = settings_menu.actions()[0]  # 첫 번째 액션이 환경음
+            ambient_action.setChecked(is_enabled)
